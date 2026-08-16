@@ -1,0 +1,43 @@
+name: Focus Download
+
+on:
+  schedule:
+    - cron: "15 12 * * 1"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+jobs:
+  focus-download:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+
+      - name: Install dependencies
+        run: python -m pip install -r requirements.txt
+
+      - name: Download Focus PDF
+        run: python src/baixar_focus.py
+
+      - name: Extract Focus text
+        run: python src/extrair_texto.py
+
+      - name: Commit downloaded Focus files
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add data/focus_*.pdf data/focus_*.txt
+          if git diff --cached --quiet; then
+            echo "No Focus files changed."
+          else
+            git commit -m "Update Focus report files"
+            git push
+          fi

@@ -1,0 +1,6 @@
+__pycache__/
+.pytest_cache/
+*.pyc
+.env
+
+# output/focus/ is intentionally versioned to store generated summaries.
