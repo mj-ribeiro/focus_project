@@ -300,7 +300,7 @@ def executive_summary_html(publication_date, rows):
         f"{selic_next_year_text}. O <strong>PIB</strong> de 2026 "
         f"{movement_phrase('PIB Total', gdp)}, e o <strong>câmbio</strong> "
         f"{movement_phrase('Câmbio', exchange)}."
-    )
+    ) 
 
     details = []
     if igpm:

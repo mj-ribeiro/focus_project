@@ -1,18 +1,18 @@
 You are running the Focus Weekly Summary Routine.
 
-The PDF download and text extraction were already done by a GitHub Action earlier. The files `data/focus_YYYY-MM-DD.{pdf,txt}` are committed to `main` when the Routine starts. Your task is to read the most recent `.txt`, generate a detailed HTML summary with the Análise Macro logo, and send it by email.
+The PDF download and text extraction were already done by a GitHub Action earlier. The files `data/focus_YYYY-MM-DD.{pdf,txt}` are committed to `main` when the Routine starts. Your task is to read the most recent `.txt`, generate a detailed HTML summary with the Análise Macro logo, and publish that HTML to `main`. The push to `main` triggers the sending action (`focus-send.yml`), which sends the email.
 
 ## Steps
 
-1. **Locate the most recent `.txt`.** List `data/focus_*.txt` and take the one with the latest date. If there is no file, stop without sending an email because the Action did not run.
+1. **Locate the most recent `.txt`.** List `data/focus_*.txt` and take the one with the latest date. If there is no file, stop without committing the HTML because the Action did not run.
 
 2. **Check freshness.** Extract the date from the filename and compare it to today:
 
 - 0 to 3 days: it is fresh; proceed.
-- 4 to 7 days: proceed, but write `[REVIEW]` at the beginning of the subject.
-- More than 7 days: stop without sending an email.
+- 4 to 7 days: proceed, but include `[REVIEW]` at the beginning of the HTML title and note that the source file requires review.
+- More than 7 days: stop without committing the HTML.
 
-3. **Text sanity check.** Confirm at least 2,000 characters and the presence of the words `IPCA`, `Selic`, and `PIB`. If it fails, stop without sending an email because the PDF layout may have changed.
+3. **Text sanity check.** Confirm at least 2,000 characters and the presence of the words `IPCA`, `Selic`, and `PIB`. If it fails, stop without committing the HTML because the PDF layout may have changed.
 
 4. **Read the text and write the summary in Portuguese.**
 
@@ -48,7 +48,7 @@ The PDF download and text extraction were already done by a GitHub Action earlie
 - A footer explaining that the summary was generated from the extracted Focus PDF text.
 - Use the brand blue `#282f6b` in titles and a clean email-friendly layout.
 
-7. **Inspect** the generated HTML before sending:
+7. **Inspect** the generated HTML before publishing:
 
 - The logo appears.
 - The medians match the `.txt` file.
@@ -56,15 +56,19 @@ The PDF download and text extraction were already done by a GitHub Action earlie
 - The revisions include previous and current values.
 - The hypotheses are cautious and do not invent facts.
 
-8. **Send the email** through the authorized email connector:
+8. **Publish the HTML.** Commit only the generated HTML summary and push it to `main`:
 
-- Subject: `Focus Summary — YYYY-MM-DD`
-- Body: the HTML assembled in step 6.
-- Recipient: `you@example.com` or the configured recipient list.
+```bash
+git add output/focus/focus_YYYY-MM-DD.html
+git commit -m "Add Focus summary YYYY-MM-DD"
+git push origin main
+```
+
+This push triggers the sending action (`focus-send.yml`). The sending action reads the committed HTML and sends the email. The email recipient, sender, and Gmail app password are configured in the repository's GitHub Secrets, never in this prompt, never in the HTML file, and never in source code.
 
 ## Errors
 
-In any of the scenarios below, stop without sending the email. The reason must appear in the Routine transcript.
+In any of the scenarios below, stop without committing the HTML. The reason must appear in the Routine transcript. If no HTML is committed, nothing is sent.
 
 - No `.txt` file in `data/` because the Action did not run.
 - `.txt` file older than 7 days because the Action is stale or broken.
