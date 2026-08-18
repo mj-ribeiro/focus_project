@@ -92,6 +92,14 @@ def send_message(message, recipients, sender, app_password):
         smtp.send_message(message, from_addr=sender, to_addrs=recipients)
 
 
+def normalize_app_password(app_password):
+    """Remove cosmetic spacing from a Gmail app password."""
+    if not app_password:
+        return app_password
+
+    return "".join(app_password.split())
+
+
 def main():
     """Run the command-line interface for sending a Focus HTML summary."""
     parser = argparse.ArgumentParser(
@@ -149,7 +157,7 @@ def main():
         return 0
 
     sender = os.getenv("FOCUS_SMTP_USER")
-    app_password = os.getenv("FOCUS_SMTP_APP_PASSWORD")
+    app_password = normalize_app_password(os.getenv("FOCUS_SMTP_APP_PASSWORD"))
 
     if not sender:
         print("Missing FOCUS_SMTP_USER environment variable.", file=sys.stderr)
@@ -166,7 +174,20 @@ def main():
     message, all_recipients = build_message(
         sender, recipients, bcc_recipients, subject, html
     )
-    send_message(message, all_recipients, sender, app_password)
+    try:
+        send_message(message, all_recipients, sender, app_password)
+    except smtplib.SMTPAuthenticationError:
+        print(
+            "Gmail rejected the SMTP login. Check that FOCUS_SMTP_USER is the full "
+            "Gmail address for the same account that created the app password, and "
+            "that FOCUS_SMTP_APP_PASSWORD is a Gmail app password, not the normal "
+            "Google account password.",
+            file=sys.stderr,
+        )
+        return 1
+    except smtplib.SMTPException as exc:
+        print(f"SMTP error while sending email: {exc}", file=sys.stderr)
+        return 1
 
     print(f"Email sent: {subject}")
     print(f"Recipients: {', '.join(recipients)}")

@@ -1,70 +1,73 @@
 You are running the Focus Weekly Summary Routine.
 
-The PDF download and text extraction were already done by a GitHub Action earlier (Monday 9:15 AM BRT). The files `data/focus_YYYY-MM-DD.{pdf,txt}` are already committed to `main` when the Routine starts. Your task is to read the most recent `.txt`, generate an HTML summary with the Macro Analysis logo, and send it by email.
+The PDF download and text extraction were already done by a GitHub Action earlier. The files `data/focus_YYYY-MM-DD.{pdf,txt}` are committed to `main` when the Routine starts. Your task is to read the most recent `.txt`, generate a detailed HTML summary with the Análise Macro logo, and send it by email.
 
 ## Steps
 
-1. **Locate the most recent `.txt`.** List `data/focus_*.txt` and take the one with the latest date. If there isn't one, stop without sending an email — the Action did not run.
+1. **Locate the most recent `.txt`.** List `data/focus_*.txt` and take the one with the latest date. If there is no file, stop without sending an email because the Action did not run.
 
-2. **Check freshness.** Extract the date from the name and compare it to today:
+2. **Check freshness.** Extract the date from the filename and compare it to today:
 
-- 0 to 3 days: it's fresh, Follow.
-
-- 4 to 7 days: follow, but write `[REVIEW]` at the beginning of the subject.
-
+- 0 to 3 days: it is fresh; proceed.
+- 4 to 7 days: proceed, but write `[REVIEW]` at the beginning of the subject.
 - More than 7 days: stop without sending an email.
 
-3. **Text Sanity Check.** Confirm: at least 2,000 characters and
-presence of the words `IPCA`, `Selic`, `PIB`. If it fails, the PDF layout may have changed — stop without sending an email.
+3. **Text sanity check.** Confirm at least 2,000 characters and the presence of the words `IPCA`, `Selic`, and `PIB`. If it fails, stop without sending an email because the PDF layout may have changed.
 
-4. **Read the text** and write the summary content:
+4. **Read the text and write the summary in Portuguese.**
 
-- **Executive Summary** in up to 200 words, in flowing prose.
+- Write a section titled `Resumo executivo`.
+- Use one or two detailed paragraphs, similar to a professional macro note.
+- Start with the main 2026 medians: IPCA, Selic, PIB, and câmbio.
+- Mention the current value, the previous-week value, and, when useful, the four-weeks-ago value.
+- Add relevant supporting variables such as IGP-M, IPCA Administrados, balança comercial, or investimento direto no país when they help explain the week.
+- Quote at least one key number verbatim in quotation marks.
+- Never invent a number. Every number must appear in the extracted `.txt`.
 
-Start with the medians of the main variables (year-to-date IPCA,
+5. **Write the section `Três principais revisões da semana`.**
 
-year-end Selic, GDP, exchange rate). Quote verbatim in quotation marks
-when there is a key number.
+- Use three bullet points.
+- Each bullet must follow this structure:
 
-- **Three main revisions of the week** in bullet points in the format:
+`Variable (year): previous → current. Hipótese: reason.`
 
-`Variable (year): previous → current. Hypothesis: reason.`
+- Add more detail than a generic note. Connect revisions when the text supports it, for example IPCA with IGP-M or Selic with inflation expectations.
+- If there is no solid hypothesis, write: `sem hipótese clara — pode ser ruído amostral.`
+- Never invent a number or causal story.
 
-- Never invent a number. If there is no solid hypothesis, write
-"no clear hypothesis — This could be sample noise.
+6. **Assemble the HTML** in `output/focus/focus_YYYY-MM-DD.html`, using this structure:
 
-5. **Assemble the HTML** of the email in `output/focus/focus_YYYY-MM-DD.html`, with this structure:
-
-- At the top, the Análise Macro logo, loaded from this URL:
+- At the top, the Análise Macro logo from:
 
 `https://analisemacro.com.br/wp-content/uploads/dlm_uploads/2021/10/logo_am.png`
 
-- A title `Focus — YYYY-MM-DD`.
+- A title: `Focus — YYYY-MM-DD`.
+- A subtitle with the source and publication date.
+- The `Resumo executivo` section in paragraphs.
+- The `Três principais revisões da semana` section in bullets.
+- A footer explaining that the summary was generated from the extracted Focus PDF text.
+- Use the brand blue `#282f6b` in titles and a clean email-friendly layout.
 
-- The executive summary in paragraphs and the three revisions in a list.
+7. **Inspect** the generated HTML before sending:
 
-- Use the brand colors: blue `#282f6b` in the titles.
+- The logo appears.
+- The medians match the `.txt` file.
+- There is at least one direct quote in quotation marks.
+- The revisions include previous and current values.
+- The hypotheses are cautious and do not invent facts.
 
-6. **Inspect** the generated HTML: the logo appears, the medians match the `.txt` file, there is at least one direct quote in quotation marks.
-
-7. **Send the email** through the authorized email connector:
+8. **Send the email** through the authorized email connector:
 
 - Subject: `Focus Summary — YYYY-MM-DD`
-
-- Body: the HTML assembled in step 5.
-
-- Recipient: `you@example.com` (replace with who should receive the summary; for more than one, separate with a comma:
-
-`fulano@example.com, ciclano@example.com`).
+- Body: the HTML assembled in step 6.
+- Recipient: `you@example.com` or the configured recipient list.
 
 ## Errors
 
-In any of the scenarios below, stop without sending the email. The reason appears in the Routine transcript.
+In any of the scenarios below, stop without sending the email. The reason must appear in the Routine transcript.
 
-- No `.txt` file in `date/` (Action did not run).
-
-- `.txt` file older than 7 days (Broken Action).
-
-- Text sanity check failed (PDF layout change).
+- No `.txt` file in `data/` because the Action did not run.
+- `.txt` file older than 7 days because the Action is stale or broken.
+- Text sanity check failed because the PDF layout may have changed.
 
 Never invent a number.
